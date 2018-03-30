@@ -1,10 +1,13 @@
 #include <iostream>
 #include <unistd.h>
 #include <dirent.h>
+#include <vector>
+
+#include "Simulation.h"
 
 // Some key terms: 
 // a "scenario" refers to each individual run using N stations, K ready stations, and I probe start level
-// a "simulation" refers to the running of X tests using N stations, K ready stations, and I probe start level
+// a "simulation" refers to the running of X scenarios using N stations, K ready stations, and I probe start level
 // a "session" refers to the combination of C simulations. When a session is printed it tabulates and plots all of the simulations that have been run under it. Starting a new session means there are 0 simulation results saved
 
 /////////////////////////////////
@@ -41,6 +44,10 @@ bool stringToInt(std::string string, int* storeValue);
 // Variables
 /////////////////////////////////
 
+std::string directory;
+std::string filename("ATW_Session_Results.txt");
+std::vector<Simulation> session;
+
 /////////////////////////////////
 // Implementation
 /////////////////////////////////
@@ -54,7 +61,7 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 	
-	std::string directory(argv[1]);
+	directory.assign(argv[1]);
 	
 	if(directory[0] == 'c' && directory[1] == 'd' && directory.length() == 2) // Assign the current directory to the variable "directory"
 	{
@@ -77,6 +84,7 @@ int main(int argc, char** argv)
 		}
 	}
 	
+	session.push_back(Simulation()); // We always start with one simulation ready
 	userLoop();
 	
 	return 0;
@@ -100,23 +108,22 @@ void userLoop()
 
 bool consumeCommand(std::string input)
 {
-	if(input.size() == 4) // Must be the help command
+	if(input.size() == 4 && input[0] == 'h' && input[1] == 'e' && input[2] == 'l' && input[3] == 'p')
 	{
-		if(input[0] == 'h' && input[1] == 'e' && input[2] == 'l' && input[3] == 'p')
-			return help();
+		return help();
 	}
 	else
 	{
-		if(input[0] == 't' && input[1] == 's')
+		if(input.size() >= 4 && input[0] == 't' && input[1] == 's')
 			return setTotalStations(input);
 		
-		else if(input[0] == 'r' && input[1] == 's')
+		else if(input.size() >= 4 && input[0] == 'r' && input[1] == 's')
 			return setNumReadyStations(input);
 		
-		else if(input[0] == 's' && input[1] == 'l')
+		else if(input.size() >= 4 && input[0] == 's' && input[1] == 'l')
 			return setStartingLevel(input);
 		
-		else if(input[0] == 's' && input[1] == 'c')
+		else if(input.size() >= 4 && input[0] == 's' && input[1] == 'c')
 			return setTotalScenariosToRun(input);
 		
 		else if(input.size() == 2 && input[0] == 'v' && input[1] == 's')
@@ -131,7 +138,7 @@ bool consumeCommand(std::string input)
 		else if(input.size() == 2 && input[0] == 'n' && input[1] == 's')
 			return newSession();
 		
-		else if(input[0] == 'f' && input[1] == 'n')
+		else if(input.size() >= 4 && input[0] == 'f' && input[1] == 'n')
 			return setSaveFileName(input);
 		
 		else if(input.size() == 2 && input[0] == 'v' && input[1] == 'f')
@@ -168,7 +175,7 @@ bool help()
 	std::cout << "Enter 'rr' to run the a simulation." << std::endl;
 	std::cout << "Enter 'ps' to print the results of the current session to file." << std::endl;
 	std::cout << "Enter 'ns' to start a new session, will clear all the data from the previous session." << std::endl;
-	std::cout << "Enter 'fn <Filename>' to set the filename to save to (defaults to ATW_Session_Results)." << std::endl;
+	std::cout << "Enter 'fn <Filename.txt>' to set the filename to save to (defaults to ATW_Session_Results.txt)." << std::endl;
 	std::cout << "Enter 'vf' to see what the save filename is set to." << std::endl;
 	std::cout << "Enter 'vd' to see what the directory the save file is being saved in is." << std::endl;
 	std::cout << "Enter 'qq' to quit. Note that the session is NOT printed here, do so manually before quitting." << std::endl;
@@ -178,57 +185,128 @@ bool help()
 
 bool setTotalStations(std::string input)
 {
+	int stationsN;
+	if(stringToInt(input.substr(3, std::string::npos), &stationsN) == true)
+	{
+		if(stationsN <= 0)
+			std::cout << "Please enter a value greater than 0." << std::endl;
+		else
+			session.back().stationsN = stationsN;
+	}
+	else
+	{
+		std::cout << "Please enter an integer value greater than 0." << std::endl;
+	}
 	
+	return true;
 }
 
 bool setNumReadyStations(std::string input)
 {
+	int readyStationsK;
+	if(stringToInt(input.substr(3, std::string::npos), &readyStationsK) == true)
+	{
+		if(readyStationsK <= 0)
+			std::cout << "Please enter a value greater than 0." << std::endl;
+		else
+			session.back().readyStationsK = readyStationsK;
+	}
+	else
+	{
+		std::cout << "Please enter an integer value greater than 0." << std::endl;
+	}
 	
+	return true;
 }
 
 bool setStartingLevel(std::string input)
 {
+	int probeLevelI;
+	if(stringToInt(input.substr(3, std::string::npos), &probeLevelI) == true)
+	{
+		if(probeLevelI < 0)
+			std::cout << "Please enter a value greater than or equal to 0." << std::endl;
+		else
+			session.back().probeLevelI = probeLevelI;
+	}
+	else
+	{
+		std::cout << "Please enter an integer value greater than or equal to 0." << std::endl;
+	}
 	
+	return true;
 }
 
 bool setTotalScenariosToRun(std::string input)
 {
+	int scenariosX;
+	if(stringToInt(input.substr(3, std::string::npos), &scenariosX) == true)
+	{
+		if(scenariosX <= 0)
+			std::cout << "Please enter a value greater than 0." << std::endl;
+		else
+			session.back().scenariosX = scenariosX;
+	}
+	else
+	{
+		std::cout << "Please enter an integer value greater than 0." << std::endl;
+	}
 	
+	return true;
 }
 
 bool viewSimulationParameters()
 {
+	std::cout << "Simulation will run with: " << std::endl;
+	std::cout << session.back().stationsN << " Station(s)." << std::endl;
+	std::cout << session.back().readyStationsK << " Ready station(s)." << std::endl;
+	std::cout << session.back().probeLevelI << " As the starting probe level." << std::endl;
+	std::cout << session.back().scenariosX << " Scenario(s)." << std::endl;
 	
+	return true;
 }
 
 bool runSimulation()
 {
+	viewSimulationParameters();
+	std::cout << std::endl;
+	std::cout << session.back().run() << std::endl;
 	
+	session.push_back(Simulation()); // We are starting a new simulation to collect data on now in this session.
+	
+	std::cout << std::endl;
+	std::cout << "Complete, saving data to session, you can prepare a new simulation to run." << std::endl;
+	return true;
 }
 
 bool printSession()
 {
-	
+	return true;
 }
 
 bool newSession()
 {
-	
+	session.clear();
+	session.push_back(Simulation());
+	return true;
 }
 
 bool setSaveFileName(std::string input)
 {
-	
+	filename.assign(input.substr(3, std::string::npos));
+	return true;
 }
 
 bool showSaveFileName()
 {
-	
+	std::cout << "Save filename is: " << filename << std::endl;
+	return true;
 }
 
 bool showSaveDirectory()
 {
-	
+	std::cout << "Directory being saved to is: " << directory << std::endl;
+	return true;
 }
 
 bool quit()

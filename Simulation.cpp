@@ -51,7 +51,7 @@ std::string Simulation::run()
 		}
 		
 		if(useBasicAlg == false)
-			probeLevelI = (int)(log2((double)readyStationsK));
+			probeLevelI = (int)round(log2((double)readyStationsK));
 		
 		// Start probing
 		int nodesToProbe = 1 << probeLevelI;

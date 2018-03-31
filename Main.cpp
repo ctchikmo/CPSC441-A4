@@ -8,7 +8,7 @@
 
 #include "Simulation.h"
 
-#define COL_COUNT				7
+#define COL_COUNT				8
 #define OUTPUT_COL_WIDTH 		11 // Smallest it can go is 11
 #define DOUBLE_STRING_PRECISION 2
 
@@ -33,6 +33,7 @@ bool setTotalStations(std::string input);
 bool setNumReadyStations(std::string input);
 bool setStartingLevel(std::string input);
 bool setTotalScenariosToRun(std::string input);
+bool setAlgorithm(std::string input);
 bool viewSimulationParameters();
 bool runSimulation(); // Runs the simulation given the parameters for scenarioCount times, averages the results and stores in memory (to be printed later)
 bool printSession();
@@ -137,6 +138,9 @@ bool consumeCommand(std::string input)
 		else if(input.size() >= 4 && input[0] == 's' && input[1] == 'c')
 			return setTotalScenariosToRun(input);
 		
+		else if(input.size() == 4 && input[0] == 'p' && input[1] == 'a')
+			return setAlgorithm(input);
+		
 		else if(input.size() == 2 && input[0] == 'v' && input[1] == 's')
 			return viewSimulationParameters();
 		
@@ -182,6 +186,7 @@ bool help()
 	std::cout << "Enter 'rs <Number of ready stations>' to set the number of ready stations (default 1)." << std::endl;
 	std::cout << "Enter 'sl <Level to start at>' to set the starting probe level (default 0)." << std::endl;
 	std::cout << "Enter 'sc <Scenario count>' to set the number of scenario runs (default 100)." << std::endl;
+	std::cout << "Enter 'pa <a or b>' to set the probing algorithm. 'a' for advanced, 'b' for basic (default b)." << std::endl;
 	std::cout << "Enter 'vs' to start a view the simulation parameters" << std::endl;
 	std::cout << "Enter 'rr' to run the a simulation." << std::endl;
 	std::cout << "Enter 'ps' to print the results of the current session to file." << std::endl;
@@ -268,6 +273,18 @@ bool setTotalScenariosToRun(std::string input)
 	return true;
 }
 
+bool setAlgorithm(std::string input)
+{
+	if(input.substr(3, std::string::npos)[0] == 'b')
+		session.back().useBasicAlg = true;
+	else if(input.substr(3, std::string::npos)[0] == 'a')
+		session.back().useBasicAlg = false;
+	else
+		std::cout << "Please enter either an 'a' for advanced algorithm, or 'b' for basic." << std::endl;
+	
+	return true;
+}
+
 bool viewSimulationParameters()
 {
 	std::cout << "Simulation will run with: " << std::endl;
@@ -275,6 +292,11 @@ bool viewSimulationParameters()
 	std::cout << session.back().readyStationsK << " Ready station(s)." << std::endl;
 	std::cout << session.back().probeLevelI << " As the starting probe level." << std::endl;
 	std::cout << session.back().scenariosX << " Scenario(s)." << std::endl;
+	
+	if(session.back().useBasicAlg)
+		std::cout << "The basic algorithm" << std::endl;
+	else
+		std::cout << "The advanced algorithm" << std::endl;
 	
 	return true;
 }
@@ -297,6 +319,7 @@ bool printSession()
 	std::ofstream file;
 	file.open(directory + "/" + filename);
 	
+	outputFormattedColCentered(&file, "Algorithm");
 	outputFormattedColCentered(&file, "N Stations");
 	outputFormattedColCentered(&file, "K Ready");
 	outputFormattedColCentered(&file, "I Start");
@@ -312,6 +335,12 @@ bool printSession()
 	
 	for(unsigned int i = 0; i < session.size() - 1; i++) // -1 because the current simulation (at the end of the session's simulation list) has not yet been run
 	{
+		if(session.back().useBasicAlg)
+			outputFormattedColCentered(&file, "Basic");
+		else
+			outputFormattedColCentered(&file, "Advanced");
+		
+		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
 		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
 		outputFormattedColCentered(&file, std::to_string(session[i].readyStationsK));
 		outputFormattedColCentered(&file, std::to_string(session[i].probeLevelI));

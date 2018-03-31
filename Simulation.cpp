@@ -55,7 +55,9 @@ std::string Simulation::run()
 		if(nodesToProbe > stationsN) 
 			nodesToProbe = stationsN;
 		int shuffle = levelCount - 1 - probeLevelI;
-		basicProbeWalkthrough(&stations, nodesToProbe, shuffle);
+		
+		if(useBasicAlg)
+			basicProbeWalkthrough(&stations, nodesToProbe, shuffle);
 		
 		// Add to the percentages
 		double totalProbes = successProbes + collisionProbes + idleProbes; // This will always be greater than 0, as there is always one node.

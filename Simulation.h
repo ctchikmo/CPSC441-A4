@@ -18,6 +18,7 @@ class Simulation
 		int readyStationsK = 1;
 		int probeLevelI = 0;
 		int scenariosX = 100;
+		bool useBasicAlg = true;
 		
 		std::string run(); // Returns a message from running.
 		

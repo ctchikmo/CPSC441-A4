@@ -4,6 +4,21 @@
 
 #include "Simulation.h"
 
+Simulation::Simulation()
+{
+	
+}
+
+Simulation::Simulation(int n, int k, int i, int x, bool basic):
+stationsN(n),
+readyStationsK(k),
+probeLevelI(i),
+scenariosX(x),
+useBasicAlg(basic)
+{
+	
+}
+
 std::string Simulation::run()
 {
 	int levelCount = 1;
@@ -50,14 +65,15 @@ std::string Simulation::run()
 			stations[k].active = true; // Note that readyStationsK is always less than or equal to stationsN
 		}
 		
+		int tempLevel = probeLevelI;
 		if(useBasicAlg == false)
-			probeLevelI = (int)round(log2((double)readyStationsK));
+			tempLevel = (int)round(log2((double)readyStationsK));
 		
 		// Start probing
-		int nodesToProbe = 1 << probeLevelI;
+		int nodesToProbe = 1 << tempLevel;
 		if(nodesToProbe > stationsN) 
 			nodesToProbe = stationsN;
-		int shuffle = levelCount - 1 - probeLevelI;
+		int shuffle = levelCount - 1 - tempLevel;
 		
 		if(useBasicAlg)
 		{

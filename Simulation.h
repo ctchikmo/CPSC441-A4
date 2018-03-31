@@ -19,6 +19,9 @@ class Simulation
 		int scenariosX = 100;
 		bool useBasicAlg = true;
 		
+		Simulation();
+		Simulation(int n, int k, int i, int x, bool basic);
+		
 		std::string run(); // Returns a message from running.
 		
 		double getSuccessProbesPercent();

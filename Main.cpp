@@ -15,7 +15,7 @@
 // Some key terms: 
 // a "scenario" refers to each individual run using N stations, K ready stations, and I probe start level
 // a "simulation" refers to the running of X scenarios using N stations, K ready stations, and I probe start level
-// a "session" refers to the combination of C simulations. When a session is printed it tabulates and plots all of the simulations that have been run under it. Starting a new session means there are 0 simulation results saved
+// a "session" refers to the combination of C simulations. When a session is printed it tabulates all of the simulations that have been run under it. Starting a new session means there are 0 simulation results saved
 
 /////////////////////////////////
 // General
@@ -307,7 +307,8 @@ bool runSimulation()
 	std::cout << std::endl;
 	std::cout << session.back().run();
 	
-	session.push_back(Simulation()); // We are starting a new simulation to collect data on now in this session.
+	// We are starting a new simulation to collect data on now in this session.
+	session.push_back(Simulation(session.back().stationsN, session.back().readyStationsK, session.back().probeLevelI, session.back().scenariosX, session.back().useBasicAlg));
 	
 	std::cout << std::endl;
 	std::cout << "Done Saving data to session, you are on a new simulation with default values now." << std::endl;

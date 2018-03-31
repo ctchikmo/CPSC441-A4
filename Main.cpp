@@ -341,7 +341,6 @@ bool printSession()
 			outputFormattedColCentered(&file, "Advanced");
 		
 		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
-		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
 		outputFormattedColCentered(&file, std::to_string(session[i].readyStationsK));
 		outputFormattedColCentered(&file, std::to_string(session[i].probeLevelI));
 		outputFormattedColCentered(&file, std::to_string(session[i].scenariosX));

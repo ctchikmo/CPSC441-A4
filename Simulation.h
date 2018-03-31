@@ -7,7 +7,6 @@
 struct Station
 {
 	bool active = false;
-	bool sent = false;
 	int number = -1;
 };
 
@@ -35,7 +34,7 @@ class Simulation
 		double cumulativeCollisionPercentage = 0;
 		double cumulativeIdlePercentage = 0;
 		
-		void basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle);
+		void basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset);
 };
 
 #endif

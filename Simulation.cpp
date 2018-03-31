@@ -38,10 +38,7 @@ std::string Simulation::run()
 	{
 		// Reset stations
 		for(int i = 0; i < stationsN; i++)
-		{
 			stations[i].active = false;
-			stations[i].sent = false;
-		}
 		
 		// Random equal activation of stations. The stations which were randomly shuffled to the front are picked, although chance to be selected goes up as spots are taken, thats okay becuase the only ones with a
 		// now unequal chance are the ones that were picked. After each suffle to the front the remaining stations all have an equal chance. Not done using rand() % number, as must check if the station has already 
@@ -57,7 +54,7 @@ std::string Simulation::run()
 		int shuffle = levelCount - 1 - probeLevelI;
 		
 		if(useBasicAlg)
-			basicProbeWalkthrough(&stations, nodesToProbe, shuffle);
+			basicProbeWalkthrough(&stations, nodesToProbe, shuffle, 0);
 		
 		// Add to the percentages
 		double totalProbes = successProbes + collisionProbes + idleProbes; // This will always be greater than 0, as there is always one node.
@@ -77,7 +74,7 @@ std::string Simulation::run()
 	return returnMessage;
 }
 
-void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle)
+void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset)
 {
 	for(int node = 0; node < nodesToProbe; node++)
 	{
@@ -87,7 +84,7 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		
 		for(int n = 0; n < stationsN; n++)
 		{
-			if(((*stations)[n].number >> shuffle) == node && (*stations)[n].active == true && (*stations)[n].sent == false)
+			if(((*stations)[n].number >> shuffle) == (node + nodeOffset) && (*stations)[n].active == true)
 			{
 				if(hitActive == true)
 				{
@@ -103,15 +100,11 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		if(collision == true) // If this happens, we need to go into the causing node, which is the current one.
 		{
 			collisionProbes++;
-			
-			int newNodesToProbe = nodesToProbe << 2;
-			if(newNodesToProbe > stationsN) 
-				newNodesToProbe = stationsN;
-			basicProbeWalkthrough(stations, newNodesToProbe, shuffle - 1);
+			basicProbeWalkthrough(stations, 2, shuffle - 1, node * 2); // Always probe for 2 nodes, since we are binary a collision means only 2 branches to go through from this level. (works fine in case of 1 leaf node)
 		}
 		else if(hitActive == true)
 		{
-			(*stations)[hitActiveIndex].sent = true;
+			(*stations)[hitActiveIndex].active = false;
 			successProbes++;
 		}
 		else // No actives found, so wasted probe (idle).

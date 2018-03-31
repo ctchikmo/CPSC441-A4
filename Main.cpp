@@ -190,6 +190,8 @@ bool setTotalStations(std::string input)
 	{
 		if(stationsN <= 0)
 			std::cout << "Please enter a value greater than 0." << std::endl;
+		else if(stationsN > 1048576) // This is 2^20
+			std::cout << "Please enter a value less than or equal to 1048576 (2^20)" << std::endl;
 		else
 			session.back().stationsN = stationsN;
 	}
@@ -270,12 +272,12 @@ bool runSimulation()
 {
 	viewSimulationParameters();
 	std::cout << std::endl;
-	std::cout << session.back().run() << std::endl;
+	std::cout << session.back().run();
 	
 	session.push_back(Simulation()); // We are starting a new simulation to collect data on now in this session.
 	
 	std::cout << std::endl;
-	std::cout << "Complete, saving data to session, you can prepare a new simulation to run." << std::endl;
+	std::cout << "Done Saving data to session, you are on a new simulation with default values now." << std::endl;
 	return true;
 }
 

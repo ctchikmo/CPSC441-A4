@@ -3,6 +3,12 @@
 
 #include <string>
 
+struct Station
+{
+	bool active = false;
+	int number = -1;
+};
+
 class Simulation
 {
 	public:

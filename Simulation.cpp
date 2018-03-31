@@ -100,7 +100,7 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		if(collision == true) // If this happens, we need to go into the causing node, which is the current one.
 		{
 			collisionProbes++;
-			basicProbeWalkthrough(stations, 2, shuffle - 1, node * 2); // Always probe for 2 nodes, since we are binary a collision means only 2 branches to go through from this level. (works fine in case of 1 leaf node)
+			basicProbeWalkthrough(stations, 2, shuffle - 1, (node + nodeOffset) * 2); // Always probe for 2 nodes, since we are binary a collision means only 2 branches to go through from this level. (works fine in case of 1 leaf node)
 		}
 		else if(hitActive == true)
 		{

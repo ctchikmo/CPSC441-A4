@@ -7,7 +7,7 @@
 struct Station
 {
 	bool active = false;
-	int number = -1;
+	int number = 0;
 };
 
 class Simulation

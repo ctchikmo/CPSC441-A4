@@ -1,4 +1,5 @@
 #include <algorithm>    // std::random_shuffle
+#include <iostream>
 
 #include "Simulation.h"
 
@@ -28,7 +29,7 @@ std::string Simulation::run()
 	}
 	
 	// Each node is a simple true or false, true for 'will transmit', false for 'will not'. 
-	std::vector<Station> stations[stationsN];
+	std::vector<Station> stations(stationsN);
 	for(int n = 0; n < stationsN; n++)
 		stations[n].number = n;
 	
@@ -37,14 +38,17 @@ std::string Simulation::run()
 	{
 		// Reset stations
 		for(int i = 0; i < stationsN; i++)
+		{
 			stations[i].active = false;
+			stations[i].sent = false;
+		}
 		
 		// Random equal activation of stations. The stations which were randomly shuffled to the front are picked, although chance to be selected goes up as spots are taken, thats okay becuase the only ones with a
 		// now unequal chance are the ones that were picked. After each suffle to the front the remaining stations all have an equal chance. Not done using rand() % number, as must check if the station has already 
 		// been selected, potentially causing a huge busy loop if we want all stations to be ready.
 		std::random_shuffle(stations.begin(), stations.end());
 		for(int k = 0; k < readyStationsK; k++)
-			stations[k] = true; // Note that readyStationsK is always less than or equal to stationsN
+			stations[k].active = true; // Note that readyStationsK is always less than or equal to stationsN
 		
 		// Start probing
 		int nodesToProbe = 1 << probeLevelI;
@@ -63,6 +67,9 @@ std::string Simulation::run()
 		successProbes = 0;
 		collisionProbes = 0;
 		idleProbes = 0;
+		
+		if((x + 1) % 25 == 0)
+			std::cout << "Scenarios: " << (x - 24) << " - " << (x) << " complete." << std::endl;
 	}
 	
 	return returnMessage;
@@ -70,7 +77,7 @@ std::string Simulation::run()
 
 void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle)
 {
-	for(int node = 0; node <nodesToProbe; node++)
+	for(int node = 0; node < nodesToProbe; node++)
 	{
 		int hitActiveIndex = 0;
 		bool hitActive = false;
@@ -78,7 +85,7 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		
 		for(int n = 0; n < stationsN; n++)
 		{
-			if((*stations[n].number >> shuffle) == node && *stations[n].active == true && *stations[n].sent == false)
+			if(((*stations)[n].number >> shuffle) == node && (*stations)[n].active == true && (*stations)[n].sent == false)
 			{
 				if(hitActive == true)
 				{
@@ -87,6 +94,7 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 				}
 				
 				hitActive = true;
+				hitActiveIndex = n;
 			}
 		}
 		
@@ -101,7 +109,7 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		}
 		else if(hitActive == true)
 		{
-			stations[hitActiveIndex].sent = true;
+			(*stations)[hitActiveIndex].sent = true;
 			successProbes++;
 		}
 		else // No actives found, so wasted probe (idle).
@@ -113,17 +121,17 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 
 double Simulation::getSuccessProbesPercent()
 {
-	return cumulativeSuccessPercentage / (double)scenariosX;
+	return cumulativeSuccessPercentage / (double)scenariosX * 100;
 }
 
 double Simulation::getCollisionProbesPercent()
 {
-	return cumulativeCollisionPercentage / (double)scenariosX;
+	return cumulativeCollisionPercentage / (double)scenariosX * 100;
 }
 
 double Simulation::getIdleProbesPercent()
 {
-	return cumulativeIdlePercentage / (double)scenariosX;
+	return cumulativeIdlePercentage / (double)scenariosX * 100;
 }
 
 

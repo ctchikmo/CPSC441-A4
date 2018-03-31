@@ -2,8 +2,15 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <vector>
+#include <iomanip> // setprecision
+#include <sstream> // stringstream
+#include <fstream>
 
 #include "Simulation.h"
+
+#define COL_COUNT				7
+#define OUTPUT_COL_WIDTH 		11 // Smallest it can go is 11
+#define DOUBLE_STRING_PRECISION 2
 
 // Some key terms: 
 // a "scenario" refers to each individual run using N stations, K ready stations, and I probe start level
@@ -38,7 +45,11 @@ bool quit(); // Session is NOT automatically printed, do it manually before quit
 /////////////////////////////////
 // Helpers
 /////////////////////////////////
+
 bool stringToInt(std::string string, int* storeValue);
+
+std::string doubleOutput(double d);
+void outputFormattedColCentered(std::ofstream* file, std::string value);
 
 /////////////////////////////////
 // Variables
@@ -283,6 +294,36 @@ bool runSimulation()
 
 bool printSession()
 {
+	std::ofstream file;
+	file.open(directory + "/" + filename);
+	
+	outputFormattedColCentered(&file, "N Stations");
+	outputFormattedColCentered(&file, "K Ready");
+	outputFormattedColCentered(&file, "I Start");
+	outputFormattedColCentered(&file, "X Scenarios");
+	outputFormattedColCentered(&file, "% Success");
+	outputFormattedColCentered(&file, "% Collision");
+	outputFormattedColCentered(&file, "% Idle");
+	file << "\r\n";
+	for(int i = 0; i < COL_COUNT; i++)
+		for(int j = 0; j < OUTPUT_COL_WIDTH + 2; j++)
+			file << '-';
+	file << "\r\n";
+	
+	for(unsigned int i = 0; i < session.size() - 1; i++) // -1 because the current simulation (at the end of the session's simulation list) has not yet been run
+	{
+		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
+		outputFormattedColCentered(&file, std::to_string(session[i].readyStationsK));
+		outputFormattedColCentered(&file, std::to_string(session[i].probeLevelI));
+		outputFormattedColCentered(&file, std::to_string(session[i].scenariosX));
+		outputFormattedColCentered(&file, doubleOutput(session[i].getSuccessProbesPercent()));
+		outputFormattedColCentered(&file, doubleOutput(session[i].getCollisionProbesPercent()));
+		outputFormattedColCentered(&file, doubleOutput(session[i].getIdleProbesPercent()));
+		file << "\r\n";
+	}
+	file.close();
+	
+	std::cout << "Done printing to file" << std::endl;
 	return true;
 }
 
@@ -331,6 +372,26 @@ bool stringToInt(std::string string, int* storeValue)
 	return true;
 }
 
+std::string doubleOutput(double d)
+{
+	// Thanks @https://stackoverflow.com/questions/29200635/convert-float-to-string-with-set-precision-number-of-decimal-digits for formatting decimals
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(DOUBLE_STRING_PRECISION) << d;
+	return stream.str();
+}
+
+void outputFormattedColCentered(std::ofstream* file, std::string value)
+{
+	int spaces = (OUTPUT_COL_WIDTH - value.size()) / 2;
+	
+	for(int i = 0; i < spaces; i++)
+		(*file) << ' ';
+	
+	(*file) << value;
+	
+	for(int i = value.size() + spaces; i <= OUTPUT_COL_WIDTH; i++)
+		(*file) << ' ';
+}
 
 
 

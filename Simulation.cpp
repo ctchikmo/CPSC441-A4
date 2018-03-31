@@ -11,7 +11,7 @@ std::string Simulation::run()
 	while(levelWidth < stationsN)
 	{
 		levelCount++;
-		levelWidth <<= 1; // *= 2 
+		levelWidth <<= 1; // *= 2, but better
 	}
 	
 	std::string returnMessage = "Finished simulation.\r\n";
@@ -45,24 +45,85 @@ std::string Simulation::run()
 		std::random_shuffle(stations.begin(), stations.end());
 		for(int k = 0; k < readyStationsK; k++)
 			stations[k] = true; // Note that readyStationsK is always less than or equal to stationsN
+		
+		// Start probing
+		int nodesToProbe = 1 << probeLevelI;
+		if(nodesToProbe > stationsN) 
+			nodesToProbe = stationsN;
+		int shuffle = levelCount - 1 - probeLevelI;
+		basicProbeWalkthrough(&stations, nodesToProbe, shuffle);
+		
+		// Add to the percentages
+		double totalProbes = successProbes + collisionProbes + idleProbes; // This will always be greater than 0, as there is always one node.
+		cumulativeSuccessPercentage += (double)(successProbes) / totalProbes;
+		cumulativeCollisionPercentage += (double)(collisionProbes) / totalProbes;
+		cumulativeIdlePercentage += (double)(idleProbes) / totalProbes;
+		
+		// Reset the counters
+		successProbes = 0;
+		collisionProbes = 0;
+		idleProbes = 0;
 	}
 	
 	return returnMessage;
 }
 
+void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle)
+{
+	for(int node = 0; node <nodesToProbe; node++)
+	{
+		int hitActiveIndex = 0;
+		bool hitActive = false;
+		bool collision = false;
+		
+		for(int n = 0; n < stationsN; n++)
+		{
+			if((*stations[n].number >> shuffle) == node && *stations[n].active == true && *stations[n].sent == false)
+			{
+				if(hitActive == true)
+				{
+					collision = true;
+					break;
+				}
+				
+				hitActive = true;
+			}
+		}
+		
+		if(collision == true) // If this happens, we need to go into the causing node, which is the current one.
+		{
+			collisionProbes++;
+			
+			int newNodesToProbe = nodesToProbe << 2;
+			if(newNodesToProbe > stationsN) 
+				newNodesToProbe = stationsN;
+			basicProbeWalkthrough(stations, newNodesToProbe, shuffle - 1);
+		}
+		else if(hitActive == true)
+		{
+			stations[hitActiveIndex].sent = true;
+			successProbes++;
+		}
+		else // No actives found, so wasted probe (idle).
+		{
+			idleProbes++;
+		}
+	}
+}
+
 double Simulation::getSuccessProbesPercent()
 {
-	return (double)successProbes / (double)scenariosX;
+	return cumulativeSuccessPercentage / (double)scenariosX;
 }
 
 double Simulation::getCollisionProbesPercent()
 {
-	return (double)collisionProbes / (double)scenariosX;
+	return cumulativeCollisionPercentage / (double)scenariosX;
 }
 
 double Simulation::getIdleProbesPercent()
 {
-	return (double)idleProbes / (double)scenariosX;
+	return cumulativeIdlePercentage / (double)scenariosX;
 }
 
 

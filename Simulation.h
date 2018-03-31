@@ -2,10 +2,12 @@
 #define SIMULATION_H
 
 #include <string>
+#include <vector>
 
 struct Station
 {
 	bool active = false;
+	bool sent = false;
 	int number = -1;
 };
 
@@ -27,6 +29,12 @@ class Simulation
 		int successProbes = 0;
 		int collisionProbes = 0;
 		int idleProbes = 0;
+		
+		double cumulativeSuccessPercentage = 0;
+		double cumulativeCollisionPercentage = 0;
+		double cumulativeIdlePercentage = 0;
+		
+		void basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle);
 };
 
 #endif

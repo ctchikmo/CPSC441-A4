@@ -35,6 +35,10 @@ class Simulation
 		double cumulativeCollisionPercentage = 0;
 		double cumulativeIdlePercentage = 0;
 		
+		// Comparing these two algorithms:
+		// If the active stations is known, and the start level is simply being guessed for basic, than the advanced will outpreform the basic alg.
+		// If the basic is given the same start level as advanced, the advanced algorithm performs better than the basic algorithm the less total% of active stations there are.
+		// 		As active station count approaches total stations the two algorithms become identical in performance as the advanced algorithm can not make the slight adjustments that increase performance. 
 		void basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset);
 		void advancedProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset, bool parentHadCollision); // parentHadCollision arg used to reduce collision probes
 };

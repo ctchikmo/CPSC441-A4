@@ -186,7 +186,7 @@ bool help()
 	std::cout << "Enter 'rs <Number of ready stations>' to set the number of ready stations (default 1)." << std::endl;
 	std::cout << "Enter 'sl <Level to start at>' to set the starting probe level (default 0)." << std::endl;
 	std::cout << "Enter 'sc <Scenario count>' to set the number of scenario runs (default 100)." << std::endl;
-	std::cout << "Enter 'pa <a or b>' to set the probing algorithm. 'a' for advanced, 'b' for basic (default b)." << std::endl;
+	std::cout << "Enter 'pa <a or b>' to set the probing algorithm. 'a': advanced, 'b': basic (default b). Note: advanced optimizes start level." << std::endl;
 	std::cout << "Enter 'vs' to start a view the simulation parameters" << std::endl;
 	std::cout << "Enter 'rr' to run the a simulation." << std::endl;
 	std::cout << "Enter 'ps' to print the results of the current session to file." << std::endl;
@@ -335,7 +335,7 @@ bool printSession()
 	
 	for(unsigned int i = 0; i < session.size() - 1; i++) // -1 because the current simulation (at the end of the session's simulation list) has not yet been run
 	{
-		if(session.back().useBasicAlg)
+		if(session[i].useBasicAlg)
 			outputFormattedColCentered(&file, "Basic");
 		else
 			outputFormattedColCentered(&file, "Advanced");

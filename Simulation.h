@@ -29,12 +29,14 @@ class Simulation
 		int successProbes = 0;
 		int collisionProbes = 0;
 		int idleProbes = 0;
+		int readyStationsLeft = 1; // Used to reduce idle probes
 		
 		double cumulativeSuccessPercentage = 0;
 		double cumulativeCollisionPercentage = 0;
 		double cumulativeIdlePercentage = 0;
 		
 		void basicProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset);
+		void advancedProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset, bool parentHadCollision); // parentHadCollision arg used to reduce collision probes
 };
 
 #endif

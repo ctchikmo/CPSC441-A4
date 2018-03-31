@@ -1,5 +1,6 @@
 #include <algorithm>    // std::random_shuffle
 #include <iostream>
+#include <math.h>
 
 #include "Simulation.h"
 
@@ -45,7 +46,12 @@ std::string Simulation::run()
 		// been selected, potentially causing a huge busy loop if we want all stations to be ready.
 		std::random_shuffle(stations.begin(), stations.end());
 		for(int k = 0; k < readyStationsK; k++)
+		{
 			stations[k].active = true; // Note that readyStationsK is always less than or equal to stationsN
+		}
+		
+		if(useBasicAlg == false)
+			probeLevelI = (int)(log2((double)readyStationsK));
 		
 		// Start probing
 		int nodesToProbe = 1 << probeLevelI;
@@ -54,7 +60,14 @@ std::string Simulation::run()
 		int shuffle = levelCount - 1 - probeLevelI;
 		
 		if(useBasicAlg)
+		{
 			basicProbeWalkthrough(&stations, nodesToProbe, shuffle, 0);
+		}
+		else
+		{
+			readyStationsLeft = readyStationsK;
+			advancedProbeWalkthrough(&stations, nodesToProbe, shuffle, 0, false);
+		}
 		
 		// Add to the percentages
 		double totalProbes = successProbes + collisionProbes + idleProbes; // This will always be greater than 0, as there is always one node.
@@ -78,7 +91,6 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 {
 	for(int node = 0; node < nodesToProbe; node++)
 	{
-		int hitActiveIndex = 0;
 		bool hitActive = false;
 		bool collision = false;
 		
@@ -93,7 +105,6 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 				}
 				
 				hitActive = true;
-				hitActiveIndex = n;
 			}
 		}
 		
@@ -104,11 +115,65 @@ void Simulation::basicProbeWalkthrough(std::vector<Station>* stations, int nodes
 		}
 		else if(hitActive == true)
 		{
-			(*stations)[hitActiveIndex].active = false;
 			successProbes++;
 		}
 		else // No actives found, so wasted probe (idle).
 		{
+			idleProbes++;
+		}
+	}
+}
+
+// Something very important to note with this: When parentHadCollision == true, it is guranteed that nodesToProbe == 2. As such that call of this function will properly use the bool at the top
+void Simulation::advancedProbeWalkthrough(std::vector<Station>* stations, int nodesToProbe, int shuffle, int nodeOffset, bool parentHadCollision)
+{
+	// If this is true, than we don't need to probe the node that has not yet been checked as we know it causes the collison, so skip to its children.
+	// This value only gets used when parentHadCollision == true.
+	bool otherNodeWasIdle = false;
+
+	for(int node = 0; node < nodesToProbe && readyStationsLeft != 0; node++)
+	{
+		bool hitActive = false;
+		bool collision = false;
+		
+		// When shuffle == 0 that means we are at the leaf level as we are checking each stations full exact number. If we are at this point there will never be a collision.
+		if(parentHadCollision == true && otherNodeWasIdle == true && shuffle != 0)
+		{
+			collision = true; // We know, without probing, that this node has the collision as the parent had a collision, and between these two nodes the other node has no send attempts.
+		}
+		else
+		{
+			for(int n = 0; n < stationsN; n++)
+			{
+				if(((*stations)[n].number >> shuffle) == (node + nodeOffset) && (*stations)[n].active == true)
+				{
+					if(hitActive == true)
+					{
+						collision = true;
+						break;
+					}
+					
+					hitActive = true;
+				}
+			}
+		}
+		
+		if(collision == true) // If this happens, we need to go into the causing node, which is the current one.
+		{
+			// Only increment collisionProbes if we actually probed for that collision. See above for the case where we avoid the probe, but know its a collison. 
+			if(parentHadCollision == false || otherNodeWasIdle == false)
+				collisionProbes++;
+			
+			advancedProbeWalkthrough(stations, 2, shuffle - 1, (node + nodeOffset) * 2, true); // See comment here in basicProbeWalkthrough
+		}
+		else if(hitActive == true)
+		{
+			successProbes++;
+			readyStationsLeft--;
+		}
+		else // No actives found, so wasted probe (idle).
+		{
+			otherNodeWasIdle = true;
 			idleProbes++;
 		}
 	}

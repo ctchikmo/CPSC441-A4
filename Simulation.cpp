@@ -65,15 +65,15 @@ std::string Simulation::run()
 			stations[k].active = true; // Note that readyStationsK is always less than or equal to stationsN
 		}
 		
-		int tempLevel = probeLevelI;
+		probeLevelActuallyUsed = probeLevelI;
 		if(useBasicAlg == false)
-			tempLevel = (int)round(log2((double)readyStationsK));
+			probeLevelActuallyUsed = (int)round(log2((double)readyStationsK));
 		
 		// Start probing
-		int nodesToProbe = 1 << tempLevel;
+		int nodesToProbe = 1 << probeLevelActuallyUsed;
 		if(nodesToProbe > stationsN) 
 			nodesToProbe = stationsN;
-		int shuffle = levelCount - 1 - tempLevel;
+		int shuffle = levelCount - 1 - probeLevelActuallyUsed;
 		
 		if(useBasicAlg)
 		{

@@ -16,6 +16,7 @@ class Simulation
 		int stationsN = 1024;
 		int readyStationsK = 1;
 		int probeLevelI = 0;
+		int probeLevelActuallyUsed = 0; // two probe levels for copying and display purposes. 
 		int scenariosX = 100;
 		bool useBasicAlg = true;
 		

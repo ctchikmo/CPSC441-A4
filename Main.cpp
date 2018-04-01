@@ -343,7 +343,7 @@ bool printSession()
 		
 		outputFormattedColCentered(&file, std::to_string(session[i].stationsN));
 		outputFormattedColCentered(&file, std::to_string(session[i].readyStationsK));
-		outputFormattedColCentered(&file, std::to_string(session[i].probeLevelI));
+		outputFormattedColCentered(&file, std::to_string(session[i].probeLevelActuallyUsed));
 		outputFormattedColCentered(&file, std::to_string(session[i].scenariosX));
 		outputFormattedColCentered(&file, doubleOutput(session[i].getSuccessProbesPercent()));
 		outputFormattedColCentered(&file, doubleOutput(session[i].getCollisionProbesPercent()));
